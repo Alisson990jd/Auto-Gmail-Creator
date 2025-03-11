@@ -24,8 +24,6 @@ import time
 import requests
 from unidecode import unidecode
 import uuid
-import tempfile
-import shutil
 from fp.fp import FreeProxy  # Import FreeProxy
 
 # User Agents list for random selection
@@ -209,37 +207,21 @@ def fill_form(driver):
         print("Failed to create your Gmail, Sorry")
         print(e)
 
+# Create multiple accounts
 def create_multiple_accounts(number_of_accounts):
-    print("Starting account creation process...")
     for i in range(number_of_accounts):
-        print(f"Creating account {i + 1} of {number_of_accounts}")
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-infobars")
-        
-        # Criar um diretório temporário exclusivo para os dados do usuário
-        user_data_dir = tempfile.mkdtemp()
-        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
-        
+        chrome_options.add_argument("--user-data-dir=./cookies")
         user_agent = random.choice(user_agents)
         chrome_options.add_argument(f'user-agent={user_agent}')
         proxy = get_working_proxy()
         chrome_options.add_argument(f'--proxy-server={proxy}')
-        
-        driver = None  # Inicializar a variável driver
-        try:
-            print("Initializing WebDriver...")
-            driver = webdriver.Chrome(options=chrome_options)
-            print("WebDriver initialized successfully.")
-            fill_form(driver)
-        except Exception as e:
-            print("Failed to create your Gmail, Sorry")
-            print(e)
-        finally:
-            # Encerrar o driver e remover o diretório temporário
-            if driver:
-                print("Quitting WebDriver...")
-                driver.quit()
-            print("Removing temporary user data directory...")
-            shutil.rmtree(user_data_dir, ignore_errors=True)
-        
+        driver = webdriver.Chrome(options=chrome_options)
+        fill_form(driver)
+        driver.quit()
         time.sleep(random.randint(5, 15))
+
+if __name__ == "__main__":
+    number_of_accounts = 5
+    create_multiple_accounts(number_of_accounts)
