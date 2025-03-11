@@ -24,6 +24,8 @@ import time
 import requests
 from unidecode import unidecode
 import uuid
+import tempfile
+import shutil
 from fp.fp import FreeProxy  # Import FreeProxy
 
 # User Agents list for random selection
@@ -212,14 +214,24 @@ def create_multiple_accounts(number_of_accounts):
     for i in range(number_of_accounts):
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument("--user-data-dir=./cookies")
+        
+        # Criar um diretório temporário exclusivo para os dados do usuário
+        user_data_dir = tempfile.mkdtemp()
+        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+        
         user_agent = random.choice(user_agents)
         chrome_options.add_argument(f'user-agent={user_agent}')
         proxy = get_working_proxy()
         chrome_options.add_argument(f'--proxy-server={proxy}')
-        driver = webdriver.Chrome(options=chrome_options)
-        fill_form(driver)
-        driver.quit()
+        
+        try:
+            driver = webdriver.Chrome(options=chrome_options)
+            fill_form(driver)
+        finally:
+            # Encerrar o driver e remover o diretório temporário
+            driver.quit()
+            shutil.rmtree(user_data_dir, ignore_errors=True)
+        
         time.sleep(random.randint(5, 15))
 
 if __name__ == "__main__":
