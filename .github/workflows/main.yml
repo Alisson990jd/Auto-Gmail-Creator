@@ -39,7 +39,7 @@ jobs:
           # Baixar e configurar o Chromedriver
           wget "$CHROMEDRIVER_URL" -O chromedriver_linux64.zip
           unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
+          sudo mv chromedriver_linux64/chromedriver /usr/local/bin/
           chmod +x /usr/local/bin/chromedriver
 
       # Passo 5: Executar o script
