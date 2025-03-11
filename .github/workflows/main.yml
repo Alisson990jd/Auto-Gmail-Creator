@@ -29,18 +29,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Passo 4: Baixar e configurar o Chrome
-      - name: Download and Setup Chrome
+      # Passo 4: Baixar e configurar o Chromium
+      - name: Download and Setup Chromium
         run: |
-          # Link direto para o Chrome Linux
-          CHROME_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1402768%2Fchrome-linux.zip?generation=1736218961172045&alt=media"
-          echo "Downloading Chrome from: $CHROME_URL"
+          # Link direto para o Chromium
+          CHROMIUM_URL="https://github.com/macchrome/linchrome/releases/download/v133.6943.146-M133.0.6943.146-r1402768-portable-ungoogled-Lin64/ungoogled-chromium_133.0.6943.146_1.vaapi_linux.tar.xz"
+          echo "Downloading Chromium from: $CHROMIUM_URL"
 
-          # Baixar e configurar o Chrome
-          wget "$CHROME_URL" -O chrome-linux.zip
-          unzip chrome-linux.zip
-          sudo mv chrome-linux /opt/chrome
-          sudo chmod +x /opt/chrome/chrome
+          # Baixar e configurar o Chromium
+          wget "$CHROMIUM_URL" -O chromium.tar.xz
+          tar -xf chromium.tar.xz
+          sudo mv ungoogled-chromium_133.0.6943.146_1.vaapi_linux /opt/chromium
+          sudo chmod +x /opt/chromium/chrome
 
       # Passo 5: Baixar e configurar o Chromedriver
       - name: Download and Setup Chromedriver
@@ -58,6 +58,6 @@ jobs:
       # Passo 6: Executar o script
       - name: Run Gmail Creator Script
         run: |
-          # Garantir que o Chrome esteja no PATH
-          export PATH="/opt/chrome:$PATH"
+          # Garantir que o Chromium esteja no PATH
+          export PATH="/opt/chromium:$PATH"
           python auto_gmail_creator.py
