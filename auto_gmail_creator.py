@@ -1,253 +1,691 @@
-# Display the banner at the beginning
-print("""
-===================================================
-             ██████╗  ███╗   ███╗ █████╗ ██╗     
-            ██╔═══██╗ ████╗ ████║██╔══██╗██║     
-            ██║   ██║ ██╔████╔██║███████║██║     
-            ██║   ██║ ██║╚██╔╝██║██╔══██║██║     
-            ╚██████╔╝ ██║ ╚═╝ ██║██║  ██║███████╗
-             ╚═════╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝
-                                                  
-       Automated Gmail Account Creator - By SHADOWHACKER
-       Website: https://www.shadowhackr.com
-===================================================
-""")
+# from selenium import webdriver
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select, WebDriverWait
+from seleniumwire import webdriver
+
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service as ChromeService
+
+from selenium.webdriver.chrome.service import Service
+
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-import random
+
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
+from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.webdriver.support.ui import Select
+
+from selenium.webdriver.common.by import By
+
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+
+from selenium.common.exceptions import *
+
+from webdriver_manager.chrome import ChromeDriverManager
+
+from webdriver_manager.firefox import GeckoDriverManager
+
 import time
+
+import random
+
+import datetime
+
 import requests
-from unidecode import unidecode
-import uuid
-import tempfile
-import shutil
-from fp.fp import FreeProxy  # Import FreeProxy
 
-# User Agents list for random selection
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
-    "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.52",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 YaBrowser/21.8.1.468 Yowser/2.5 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0",
-    "Mozilla/5.0 (X11; CrOS x86_64 14440.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4807.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14467.0.2022) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4838.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14469.7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.13 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14455.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4827.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14469.11.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.17 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14436.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4803.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14475.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14469.3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14471.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14388.37.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14409.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4829.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14395.0.2021) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4765.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14469.8.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.14 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14484.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14450.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4817.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14473.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14324.72.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.91 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14454.0.2022) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4824.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14453.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4816.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14447.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4815.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14477.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14476.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14469.8.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14588.67.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14588.67.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14526.69.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.82 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14695.25.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.22 Safari/537.36",
-    "Mozilla/5.0 (X11; CrOS x86_64 14526.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.91 Safari/537.36"
-       
-    # Add more User Agents
+import csv
+
+import string
+
+from fp.fp import FreeProxy
+
+from fake_useragent import UserAgent
+
+
+
+# Option for Auto User info generation
+
+AUTO_GENERATE_UERINFO = True
+
+AUTO_GENERATE_NUMBER = 10
+
+
+
+# Include Refer URL
+
+INCLUDE_REFER_URL = False
+
+
+
+# Time to wait for SELECTORS.(second)
+
+WAIT = 4
+
+
+
+# Max Retry to get phone number from sms-activate.org
+
+REQUEST_MAX_TRY = 10
+
+
+
+# Your SMS-Activate API key
+
+API_KEY = "8e49fdB90d0209c085dd1df56cedf00e" #9b6b9eb50d0A30---------d9b7495b
+
+COUNTRY_CODE = "175" #i.e, Austrailian country code, See country table in sms-activate. I often use Australian phone number and it works almost always.
+
+
+
+sms_activate_url = "https://sms-activate.org/stubs/handler_api.php"
+
+phone_request_params = {
+
+    "api_key":API_KEY,
+
+    "action":"getNumber",
+
+    "country":COUNTRY_CODE, 
+
+    "service":"go",
+
+}
+
+
+
+status_param = {
+
+    "api_key":API_KEY,
+
+    "action":"getStatus"
+
+}
+
+
+
+SELECTORS = {
+
+    "create_account":[
+
+        "//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-dgl2Hf ksBjEc lKxP2d LQeN7 FliLIb uRo0Xe TrZEUc Xf9GD']",
+
+        "//*[@class='JnOM6e TrZEUc kTeh9 KXbQ4b']"
+
+        ],
+
+    'for_my_personal_use':[
+
+        "//span[@class='VfPpkd-StrnGf-rymPhb-b9t22c']",
+
+        ], 
+
+    "first_name":"//*[@name='firstName']",
+
+    "last_name":"//*[@name='lastName']",
+
+    "username":"//*[@name='Username']",
+
+    "password":"//*[@name='Passwd']",
+
+    "confirm_password":"//*[@name='PasswdAgain']",
+
+    "next":[
+
+            "//button[@class='VfPpkd-LgbsSe VfPpkd-LgbsSe-OWXEXe-k8QpJ VfPpkd-LgbsSe-OWXEXe-dgl2Hf nCP5yc AjY5Oe DuMIQc LQeN7 qIypjc TrZEUc lw1w4b']",
+
+            "//button[contains(text(),'Next')]",
+
+            "//button[contains(text(),'I agree')]"
+
+    ],
+
+    "phone_number":"//*[@id='phoneNumberId']",
+
+    "code":'//input[@name="code"]',
+
+    "acc_phone_number":'//input[@id="phoneNumberId"]',
+
+    "acc_day":'//input[@name="day"]',
+
+    "acc_month":'//select[@id="month"]',
+
+    "acc_year":'//input[@name="year"]',
+
+    "acc_gender":'//select[@id="gender"]',
+
+    "username_warning":'//*[@class="jibhHc"]',
+
+    "username_select":'//*[@aria-posinset="3"]'
+
+}
+
+# https://webflow.com/made-in-webflow/fast , I tried to find the fast websites and you can add more.
+
+SITE_LIST = [
+
+    'https://google.com',
+
+    'https://wizardrytechnique.webflow.io/',
+
+    'https://www.rachelbavaresco.com/',
+
+    'https://lightning-bolt.webflow.io/'
+
 ]
 
-# Arabic names written in English letters
-arabic_first_names = [
-    "Ali", "Ahmed", "Omar", "Youssef", "Ayman", "Khaled", "Salma", "Nour", "Rania", "Hassan",
-    "Fadi", "Sara", "Fatma", "Heba", "Lina", "Rami", "Amir", "Yasmin", "Hala", "Tamer",
-    "Mohammed", "Yasser", "Sami", "Amira", "Zain", "Khalil", "Nabil", "Ziad", "Farah", "Layla",
-    "Jamal", "Hadi", "Tariq", "Mahmoud", "Ranya", "Rashed", "Alaa", "Kareem", "Basma", "Nadia",
-    "Yasmeen", "Hussain", "Saeed", "Iman", "Reem", "Joud", "Nourhan", "Khadija", "Sahar", "Maya",
-    "Tala", "Hiba", "Dalia", "Nisreen", "Mariam", "Haneen", "Alaa", "Wissam", "Amani", "Ibtihaj",
-    "Khalida", "Dania", "Loubna", "Ranya", "Hanan", "Nora", "Rawan", "Salim", "Fouzia", "Zayna",
-    "Tamer", "Adnan", "Jawad", "Mansour", "Waleed", "Zuhair", "Hisham", "Hadi", "Ibrahim", "Yasmina",
-    "Samira", "Huda", "Yasmin", "Rami", "Hossain", "Layal", "Kareema", "Zaki", "Aliya", "Salah",
-    "Safaa", "Marwan", "Dina", "Yasmeen", "Asma", "Naima", "Tamara", "Tania", "Sabah", "Mona",
-    "Firas", "Zayd", "Taha", "Yasin", "Sakina", "Madiha", "Rasha", "Sufyan", "Nafisa", "Othman",
-    "Safa", "Nabilah", "Hala", "Faten", "Aisha", "Hassan", "Zainab", "Nouran", "Raneem", "Youssef",
-]
+proxy_list = None
+
+with open("./data/Proxy_DB.csv", 'r') as proxy_list_file:
+
+    proxy_list = csv.reader(proxy_list_file)
+
+    proxy_list = list(proxy_list)
 
 
-arabic_last_names = [
-    "Mohamed", "Ahmed", "Hussein", "Sayed", "Ismail", "Abdallah", "Khalil", "Soliman", "Nour", "Kamel",
-    "Samir", "Ibrahim", "Othman", "Fouad", "Zaki", "Gamal", "Farid", "Mansour", "Adel", "Salem",
-    "Hossam", "Nasser", "Qassem", "Khatib", "Rashed", "Moussa", "Naim", "Abdulaziz", "Anwar", "Younes",
-    "Osama", "Bilal", "Fahd", "Rami", "Abdulrahman", "Maher", "Salim", "Tariq", "Amjad", "Ibtisam",
-    "Ranya", "Sami", "Laith", "Hassan", "Saif", "Alaa", "Mujahid", "Ibrahim", "Zuhair", "Hadi",
-    "Attar", "Said", "Jabari", "Ashraf", "Abu", "Ali", "Nasr", "Darwish", "Azzam", "Hussein",
-    "Yasin", "Zidan", "Farhan", "Khaled", "Mahmoud", "Qureshi", "Sheikh", "Abdulkareem", "Sharif", "Abdelaziz",
-    "Yunus", "Hasan", "Shakir", "Musa", "Salem", "Taha", "Ali", "Khalaf", "Khalid", "Karim",
-    "Rashid", "Siddiqi", "Sulaiman", "Almasri", "Alhussein", "Sami", "Tarek", "Noor", "Husseini", "Jamil",
-    "Ramzi", "Khalifa", "Hamed", "Anis", "Hussein", "Mahdi", "Samir", "Wahab", "Bakkar", "Najib",
-    "Abdulhadi", "Alhaj", "Shahrani", "Sulieman", "Majeed", "Nazari", "Saber", "Tawfiq", "Sabry", "Sharif",
-]
+
+def generatePassword():
+
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
+
+    size = random.randint(8, 12)
+
+    return ''.join(random.choice(chars) for x in range(size))
 
 
-# Function to get a working proxy
-def get_working_proxy():
-    while True:
-        proxy = FreeProxy(rand=True, timeout=1).get()
-        print(f"Testing proxy: {proxy}")
-        try:
-            response = requests.get("http://httpbin.org/ip", proxies={"http": proxy, "https": proxy}, timeout=5)
-            print(f"Proxy test successful: {response.json()}")
-            return proxy
-        except Exception as e:
-            print(f"Proxy test failed: {e}")
-            continue
 
-# Function to save emails to a text file
-def save_email_to_file(email, password):
-    with open("emails.txt", "a") as file:
-        file.write(f"Gmail: {email}, Password: {password}\n")
+def getRandomeUserAgent():
 
-# Generate username from random first and last name
-def generate_username():
-    first_name = random.choice(arabic_first_names)
-    last_name = random.choice(arabic_last_names)
-    random_number = random.randint(1000, 9999)
-    first_name_normalized = unidecode(first_name).lower()
-    last_name_normalized = unidecode(last_name).lower()
-    return f"{first_name_normalized}.{last_name_normalized}{random_number}"
+    UAGENTS = [
 
-# Account info
-your_birthday = "02 4 1999"
-your_gender = "1"
-your_password = "lissindurodo"
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.52',
 
-# Fill out Gmail registration form
-def fill_form(driver):
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 YaBrowser/21.8.1.468 Yowser/2.5 Safari/537.36',
+
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
+
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0',
+
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0',
+
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14440.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4807.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14467.0.2022) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4838.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.7.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.13 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14455.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4827.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.11.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.17 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14436.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4803.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14475.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14471.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14388.37.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14409.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4829.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14395.0.2021) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4765.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.8.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.14 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14484.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14450.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4817.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14473.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14324.72.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.91 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14454.0.2022) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4824.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14453.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4816.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14447.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4815.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14477.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14476.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4840.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.8.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.9 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.67.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.67.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.69.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.82 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.25.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.22 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.57.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.64 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.89.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.93 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.59.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.91.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.55 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.23.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.20 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.36.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.36 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.41.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.26 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.11.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.6 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.67.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14685.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.4992.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.69.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.82 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14682.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.16 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.9.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.5 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14574.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4937.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14388.52.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14716.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5002.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14268.81.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14469.41.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.48 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14388.61.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.37.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.37 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.51.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.32 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.92.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.56 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.43.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.54 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14505.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4870.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.16.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.25 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.28.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.44 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14543.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4918.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.11.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.6 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.89.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.133 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14588.31.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.19 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14526.6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.13 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14658.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.4975.0 Safari/537.36',
+
+        'Mozilla/5.0 (X11; CrOS x86_64 14695.25.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5002.0 Safari/537.36'
+
+    ]
+
+    agent = random.choice(UAGENTS)
+
+    return agent
+
+
+
+# This method is for chrome driver initialization. You can customize if you want.
+
+def setDriver():
+
+    seleniumwire_options = {}
+
+    seleniumwire_options['exclude_hosts'] = ['google-analytics.com']
+
+
+
+    # Secure Connection
+
+    # seleniumwire_options['verify_ssl'] = True
+
+
+
+    # Set Proxy
+
+    # proxy = getProxy() # Rotating proxy
+
+    SOCKS_PROXY = "socks5://14ab1e7131541:39d813de77@198.143.22.234:12324" # Fixed proxy, i.e socks5://14ab1e7131541:39d813de77@176.103.246.143:12324
+
+    # SOCKS_PROXY = "socks5://user:pass@ip:port" # Fixed proxy, i.e socks5://14ab1e7131541:39d813de77@176.103.246.143:12324
+
+    # SOCKS_PROXY = 'socks5://158.69.225.110:59166'
+
+
+
+    # https://pypi.org/project/free-proxy/
+
     try:
-        device_uuid = uuid.uuid4()
-        print(f"Using device UUID: {device_uuid}")
-        your_username = generate_username()
-        driver.get("https://accounts.google.com/signup/v2/createaccount?flowName=GlifWebSignIn&flowEntry=SignUp")
-        
-        # Preencher os campos de nome
-        first_name = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.NAME, "firstName")))
-        last_name = driver.find_element(By.NAME, "lastName")
-        first_name.clear()
-        first_name.send_keys(your_username.split('.')[0])
-        last_name.clear()
-        last_name.send_keys(your_username.split('.')[1])
-        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
-        next_button.click()
-        
-        # Preencher data de nascimento e gênero
-        wait = WebDriverWait(driver, 30)
-        day = wait.until(EC.visibility_of_element_located((By.NAME, "day")))
-        birthday_elements = your_birthday.split()
-        month_dropdown = Select(driver.find_element(By.ID, "month"))
-        month_dropdown.select_by_value(birthday_elements[1])
-        day_field = driver.find_element(By.ID, "day")
-        day_field.clear()
-        day_field.send_keys(birthday_elements[0])
-        year_field = driver.find_element(By.ID, "year")
-        year_field.clear()
-        year_field.send_keys(birthday_elements[2])
-        gender_dropdown = Select(driver.find_element(By.ID, "gender"))
-        gender_dropdown.select_by_value(your_gender)
-        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
-        next_button.click()
-        
-        # Criar email personalizado
-        time.sleep(2)
-        if driver.find_elements(By.ID, "selectionc4"):
-            create_own_option = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "selectionc4")))
-            create_own_option.click()
-        create_own_email = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.NAME, "Username")))
-        username_field = driver.find_element(By.NAME, "Username")
-        username_field.clear()
-        username_field.send_keys(your_username)
-        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
-        next_button.click()
-        
-        # Preencher e confirmar senha
-        password_field = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.NAME, "Passwd")))
-        password_field.clear()
-        password_field.send_keys(your_password)
-        confirm_passwd_div = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "confirm-passwd")))
-        password_confirmation_field = confirm_passwd_div.find_element(By.NAME, "PasswdAgain")
-        password_confirmation_field.clear()
-        password_confirmation_field.send_keys(your_password)
-        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
-        next_button.click()
-        
-        # Ignorar verificação de número de telefone e email de recuperação
-        try:
-            skip_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(),'Skip')]")))
-            skip_button.click()
-        except Exception as skip_error:
-            print("No phone number verification step.")
-        
-        # Aceitar os termos
-        agree_button = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button span.VfPpkd-vQzf8d")))
-        agree_button.click()
-        print(f"Your Gmail successfully created:\n{{gmail: {your_username}@gmail.com, password: {your_password}}}")
-        save_email_to_file(f"{your_username}@gmail.com", your_password)
-    except Exception as e:
-        print("Failed to create your Gmail, Sorry")
-        print(e)
 
-def create_multiple_accounts(number_of_accounts):
-    print("Starting account creation process...")
-    for i in range(number_of_accounts):
-        print(f"Creating account {i + 1} of {number_of_accounts}")
-        chrome_options = ChromeOptions()
-        chrome_options.add_argument("--disable-infobars")
-        
-        # Criar um diretório temporário exclusivo para os dados do usuário
-        user_data_dir = tempfile.mkdtemp()
-        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
-        print(f"Using temporary user data directory: {user_data_dir}")
-        
-        user_agent = random.choice(user_agents)
-        chrome_options.add_argument(f'user-agent={user_agent}')
-        print(f"Using User-Agent: {user_agent}")
-        
-        proxy = get_working_proxy()
-        chrome_options.add_argument(f'--proxy-server={proxy}')
-        print(f"Using proxy: {proxy}")
-        
-        driver = None  # Inicializar a variável driver
+        random_proxy = FreeProxy(timeout=1).get()
+
+        print('################ Use FreeProxy library to get HTTP proxy ################')
+
+    except:
+
+        print('################ Use Proxy DB to get HTTP proxy ################')
+
+        random_proxy = "http://"+ random.choice(proxy_list)[0]
+
+
+
+    HTTP_PROXY = random_proxy
+
+    print(HTTP_PROXY)
+
+    # HTTPS_PROXY = "https://user:pass@ip:port"
+
+
+
+    # Proxy
+
+    proxy_options = {}
+
+    proxy_options['no_proxy']= 'localhost,127.0.0.1'
+
+
+
+    ## Http proxy
+
+    proxy_options['http'] = HTTP_PROXY
+
+
+
+    ## Https proxy
+
+    # proxy_options['https'] = HTTPS_PROXY
+
+
+
+    ## Socks proxy
+
+    proxy_options['http'] = SOCKS_PROXY
+
+    proxy_options['https'] = SOCKS_PROXY
+
+
+
+    seleniumwire_options['proxy'] = proxy_options
+
+    # prox = Proxy()
+
+    # prox.proxy_type = ProxyType.MANUAL
+
+    # prox.socks_proxy = SOCKS_PROXY
+
+    # prox.socks_version = 5
+
+    # prox.http_proxy = HTTP_PROXY
+
+    # print(SOCKS_PROXY)
+
+    # prox.http_proxy = SOCKS_PROXY
+
+    # prox.https_proxy = SOCKS_PROXY
+
+
+
+    # capabilities = webdriver.DesiredCapabilities.CHROME
+
+    # prox.add_to_capabilities(capabilities)
+
+
+
+    # Set User Agent
+
+    # user_agent = getRandomeUserAgent() # Random user agent
+
+    # user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36" # Fixed agent
+
+    # Please refer to this https://github.com/fake-useragent/fake-useragent
+
+    user_agent = UserAgent(fallback="Mozilla/5.0 (Macintosh; Intel Mac OS X10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36").random
+
+    print(user_agent)
+
+    # Set Browser Option
+
+    options = ChromeOptions()
+
+    # options = FirefoxOptions()
+
+
+
+    prefs = {"profile.password_manager_enabled": False, "credentials_enable_service": False, "useAutomationExtension": False}
+
+    options.add_experimental_option("prefs", prefs)
+
+    options.add_experimental_option("useAutomationExtension", False)
+
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+
+    options.add_argument('--disable-dev-shm-usage')
+
+    options.add_argument('--no-sandbox')
+
+    options.add_argument("disable-popup-blocking")
+
+    options.add_argument("disable-notifications")
+
+    options.add_argument("disable-popup-blocking")
+
+    options.add_argument('--ignore-ssl-errors=yes')
+
+    options.add_argument('--ignore-certificate-errors')
+
+
+
+    # options.add_argument('--headless') # UI
+
+    # options.add_argument("--incognito")
+
+    # options.add_argument(r"--user-data-dir=C:\\Users\\Username\\AppData\\Local\\Google\\Chrome\\User Data")
+
+    # options.add_argument(r'--profile-directory=ProfileName')
+
+    options.add_argument(f"user-agent={user_agent}")
+
+
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options = options, seleniumwire_options=seleniumwire_options)
+
+    #driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options = options, seleniumwire_options=seleniumwire_options)
+
+    
+
+    return driver
+
+
+
+def main():
+
+    user_number = 0
+
+    i = 0
+
+
+
+    if(AUTO_GENERATE_UERINFO):
+
+        user_number = AUTO_GENERATE_NUMBER
+
+        print('################ Open First_Name_DB.csv ################')
+
         try:
-            print("Initializing WebDriver with the following options:")
-            for arg in chrome_options.arguments:
-                print(f" - {arg}")
-            driver = webdriver.Chrome(options=chrome_options)
-            print("WebDriver initialized successfully.")
-            fill_form(driver)
-        except Exception as e:
-            print("Failed to create your Gmail, Sorry")
-            print(e)
-        finally:
-            # Encerrar o driver e remover o diretório temporário
-            if driver:
-                print("Quitting WebDriver...")
-                driver.quit()
-            print("Removing temporary user data directory...")
-            shutil.rmtree(user_data_dir, ignore_errors=True)
-        
-        time.sleep(random.randint(5, 15))
+
+            first_name_file = open("./data/First_Name_DB.csv", 'r')
+
+            first_names = csv.reader(first_name_file)
+
+            first_names = list(first_names)
+
+        except:
+
+            print('################ Please check if First_Name_DB.csv exists ################')
+
+            quit()
+
+
+
+        print('################ Open Last_Name_DB.csv ################')
+
+        try:
+
+            last_name_file = open("./data/Last_Name_DB.csv", 'r')
+
+            last_names = csv.reader(last_name_file)
+
+            last_names = list(last_names)
+
+        except:
+
+            print('################ Please check if Last_Name_DB.csv exists ################')
+
+            quit()
+
+    else:
+
+        print('################ Open User.csv ################')
+
+        try:
+
+            user_info_file = open("User.csv", 'r')
+
+            user_infos = csv.reader(user_info_file)
+
+            user_infos = list(user_infos)
+
+            user_number = len(user_infos)
+
+        except:
+
+            print('################ Please check if User.csv exists ################')
+
+            quit()
+
+
+
+    while True:
+
+        try:
+
+            # Check if the count reach to the maxium users.
+
+            
+
+            if i == user_number:
+
+                break
+
+
+
+            i = i + 1
+
+            print('################ User:', i,' ################')
+
+            if AUTO_GENERATE_UERINFO:
+
+                first_name = random.choice(first_names)[0]
+
+                last_name = random.choice(last_names)[0]
+
+                password = generatePassword()
+
+                birthday = str(random.randint(1,12)) + "/" + str(random.randint(1,28)) + "/" +  str(random.randint(1980,1999))
+
+                user_name_manual = ""
+
+                print(first_name + "\t" + last_name + "\t" + password + '\t' + birthday)
+
+            else:
+
+                row = user_infos[i]
+
+                if "Firstname" == row[0]:
+
+                    continue
+
+
+
+                first_name = row[0]
+
+                last_name = row[1]
+
+                password = row[2]
+
+                birthday = row[3]
+
+                print(first_name + "\t" + last_name + "\t" + password + '\t' + birthday)
+
+            try:
+
+                user_name_manual = row[4]
+
+            except:
+
+                user_name_manual = ""
+
+
+
+            print('################ Initialize Chrome Driver ################')
+
+            driver = setDriver()
+
+
+
+            print('################ Random Refer website to bypass Google Bot Detection ################')
+
+            if INCLUDE_REFER_URL:
+
+                random_url = random.choice(SITE_LIST)
+
+                driver.get(random_url)
+
+
+
+            # 4 ways to go to account creation page.
+
+            random_int = random.randint(1,4)
+
+            if random_int ==  1:
+
+
+
+                print('################ Creat a google account article ################')
+
+                driver.get('https://support.google.com/accounts/answer/27441?hl=en')
+
+                WebDriverWait(driver, WAIT).until(EC.presence_of_element_located((By.XPATH,'//*[@id="hcfe-content"]/section/div/div[1]/article/section/div/div[1]/div/div[2]/a[1]'))).click()
+
+                time.sleep(WAIT)
+
+            elif random_int == 2:
+
+                print('################ Go to account page ################')
+
+                driver.get("https://accounts.google.com")
+
+
+
+ 
