@@ -1,4 +1,13 @@
-selenium
+fake_useragent
+
+fp
+
+free_proxy
+
 requests
-unidecode
-free-proxy
+
+selenium
+
+selenium_wire
+
+webdriver_manager
