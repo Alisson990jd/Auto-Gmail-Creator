@@ -41,7 +41,7 @@ jobs:
           unzip chrome-linux.zip
           ls -la chrome-linux  # Listar o conteúdo do diretório descompactado
           sudo mv chrome-linux /opt/chrome
-          sudo chmod +x /opt/chrome/chrome-linux/chrome
+          sudo chmod +x /opt/chrome/chrome  # Corrigir o caminho do binário
 
       # Passo 5: Baixar e configurar o Chromedriver
       - name: Download and Setup Chromedriver
@@ -60,5 +60,5 @@ jobs:
       - name: Run Gmail Creator Script
         run: |
           # Garantir que o Chrome esteja no PATH
-          export PATH="/opt/chrome/chrome-linux:$PATH"
+          export PATH="/opt/chrome:$PATH"
           python auto_gmail_creator.py
