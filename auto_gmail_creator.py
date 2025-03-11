@@ -107,9 +107,16 @@ arabic_last_names = [
 
 # Function to get a working proxy
 def get_working_proxy():
-    proxy = FreeProxy(rand=True, timeout=1).get()
-    print(f"Using proxy: {proxy}")
-    return proxy
+    while True:
+        proxy = FreeProxy(rand=True, timeout=1).get()
+        print(f"Testing proxy: {proxy}")
+        try:
+            response = requests.get("http://httpbin.org/ip", proxies={"http": proxy, "https": proxy}, timeout=5)
+            print(f"Proxy test successful: {response.json()}")
+            return proxy
+        except Exception as e:
+            print(f"Proxy test failed: {e}")
+            continue
 
 # Function to save emails to a text file
 def save_email_to_file(email, password):
@@ -136,22 +143,20 @@ def fill_form(driver):
         device_uuid = uuid.uuid4()
         print(f"Using device UUID: {device_uuid}")
         your_username = generate_username()
-
         driver.get("https://accounts.google.com/signup/v2/createaccount?flowName=GlifWebSignIn&flowEntry=SignUp")
-
-        # Fill in the name fields
-        first_name = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "firstName")))
+        
+        # Preencher os campos de nome
+        first_name = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.NAME, "firstName")))
         last_name = driver.find_element(By.NAME, "lastName")
         first_name.clear()
         first_name.send_keys(your_username.split('.')[0])
         last_name.clear()
         last_name.send_keys(your_username.split('.')[1])
-
-        next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
+        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
         next_button.click()
-
-        # Fill birthday and gender
-        wait = WebDriverWait(driver, 20)
+        
+        # Preencher data de nascimento e gênero
+        wait = WebDriverWait(driver, 30)
         day = wait.until(EC.visibility_of_element_located((By.NAME, "day")))
         birthday_elements = your_birthday.split()
         month_dropdown = Select(driver.find_element(By.ID, "month"))
@@ -164,96 +169,85 @@ def fill_form(driver):
         year_field.send_keys(birthday_elements[2])
         gender_dropdown = Select(driver.find_element(By.ID, "gender"))
         gender_dropdown.select_by_value(your_gender)
-        next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
+        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
         next_button.click()
-
-        # Create custom email
+        
+        # Criar email personalizado
         time.sleep(2)
         if driver.find_elements(By.ID, "selectionc4"):
-            create_own_option = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "selectionc4")))
+            create_own_option = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.ID, "selectionc4")))
             create_own_option.click()
-
-        create_own_email = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.NAME, "Username")))
+        create_own_email = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.NAME, "Username")))
         username_field = driver.find_element(By.NAME, "Username")
         username_field.clear()
         username_field.send_keys(your_username)
-        next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
+        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
         next_button.click()
-
-        # Enter and confirm password
-        password_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.NAME, "Passwd")))
+        
+        # Preencher e confirmar senha
+        password_field = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.NAME, "Passwd")))
         password_field.clear()
         password_field.send_keys(your_password)
-        confirm_passwd_div = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "confirm-passwd")))
+        confirm_passwd_div = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "confirm-passwd")))
         password_confirmation_field = confirm_passwd_div.find_element(By.NAME, "PasswdAgain")
         password_confirmation_field.clear()
         password_confirmation_field.send_keys(your_password)
-        next_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
+        next_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "VfPpkd-LgbsSe")))
         next_button.click()
-
-        # Skip phone number and recovery email
+        
+        # Ignorar verificação de número de telefone e email de recuperação
         try:
-            skip_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(),'Skip')]")))
+            skip_button = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(),'Skip')]")))
             skip_button.click()
         except Exception as skip_error:
             print("No phone number verification step.")
-
-        # Agree to terms
-        agree_button = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button span.VfPpkd-vQzf8d")))
+        
+        # Aceitar os termos
+        agree_button = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button span.VfPpkd-vQzf8d")))
         agree_button.click()
-
-        print(f"Your Gmail successfully created:\n{{\ngmail: {your_username}@gmail.com\npassword: {your_password}\n}}")
+        print(f"Your Gmail successfully created:\n{{gmail: {your_username}@gmail.com, password: {your_password}}}")
         save_email_to_file(f"{your_username}@gmail.com", your_password)
-
     except Exception as e:
         print("Failed to create your Gmail, Sorry")
         print(e)
 
 def create_multiple_accounts(number_of_accounts):
     print("Starting account creation process...")
-    
-    # Verificar versões do Chromium e Chromedriver
-    check_chromium_and_chromedriver_versions()
-    
-    try:
-        for i in range(number_of_accounts):
-            print(f"Creating account {i + 1} of {number_of_accounts}")
-            chrome_options = ChromeOptions()
-            chrome_options.add_argument("--disable-infobars")
-            
-            # Criar um diretório temporário exclusivo para os dados do usuário
-            user_data_dir = tempfile.mkdtemp()
-            chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
-            print(f"Using temporary user data directory: {user_data_dir}")
-            
-            user_agent = random.choice(user_agents)
-            chrome_options.add_argument(f'user-agent={user_agent}')
-            print(f"Using User-Agent: {user_agent}")
-            
-            proxy = get_working_proxy()
-            chrome_options.add_argument(f'--proxy-server={proxy}')
-            print(f"Using proxy: {proxy}")
-            
-            driver = None  # Inicializar a variável driver
-            try:
-                print("Initializing WebDriver with the following options:")
-                for arg in chrome_options.arguments:
-                    print(f" - {arg}")
-                driver = webdriver.Chrome(options=chrome_options)
-                print("WebDriver initialized successfully.")
-                fill_form(driver)
-            except Exception as e:
-                print("Failed to create your Gmail, Sorry")
-                print(e)
-            finally:
-                # Encerrar o driver e remover o diretório temporário
-                if driver:
-                    print("Quitting WebDriver...")
-                    driver.quit()
-                print("Removing temporary user data directory...")
-                shutil.rmtree(user_data_dir, ignore_errors=True)
-            
-            time.sleep(random.randint(5, 15))
-    except Exception as e:
-        print("An unexpected error occurred during account creation.")
-        print(e)
+    for i in range(number_of_accounts):
+        print(f"Creating account {i + 1} of {number_of_accounts}")
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument("--disable-infobars")
+        
+        # Criar um diretório temporário exclusivo para os dados do usuário
+        user_data_dir = tempfile.mkdtemp()
+        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+        print(f"Using temporary user data directory: {user_data_dir}")
+        
+        user_agent = random.choice(user_agents)
+        chrome_options.add_argument(f'user-agent={user_agent}')
+        print(f"Using User-Agent: {user_agent}")
+        
+        proxy = get_working_proxy()
+        chrome_options.add_argument(f'--proxy-server={proxy}')
+        print(f"Using proxy: {proxy}")
+        
+        driver = None  # Inicializar a variável driver
+        try:
+            print("Initializing WebDriver with the following options:")
+            for arg in chrome_options.arguments:
+                print(f" - {arg}")
+            driver = webdriver.Chrome(options=chrome_options)
+            print("WebDriver initialized successfully.")
+            fill_form(driver)
+        except Exception as e:
+            print("Failed to create your Gmail, Sorry")
+            print(e)
+        finally:
+            # Encerrar o driver e remover o diretório temporário
+            if driver:
+                print("Quitting WebDriver...")
+                driver.quit()
+            print("Removing temporary user data directory...")
+            shutil.rmtree(user_data_dir, ignore_errors=True)
+        
+        time.sleep(random.randint(5, 15))
