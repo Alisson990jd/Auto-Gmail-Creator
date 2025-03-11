@@ -219,11 +219,15 @@ def create_multiple_accounts(number_of_accounts):
         # Criar um diretório temporário exclusivo para os dados do usuário
         user_data_dir = tempfile.mkdtemp()
         chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+        print(f"Using temporary user data directory: {user_data_dir}")
         
         user_agent = random.choice(user_agents)
         chrome_options.add_argument(f'user-agent={user_agent}')
+        print(f"Using User-Agent: {user_agent}")
+        
         proxy = get_working_proxy()
         chrome_options.add_argument(f'--proxy-server={proxy}')
+        print(f"Using proxy: {proxy}")
         
         driver = None  # Inicializar a variável driver
         try:
