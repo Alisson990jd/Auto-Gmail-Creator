@@ -209,7 +209,6 @@ def fill_form(driver):
         print("Failed to create your Gmail, Sorry")
         print(e)
 
-# Create multiple accounts
 def create_multiple_accounts(number_of_accounts):
     for i in range(number_of_accounts):
         chrome_options = ChromeOptions()
@@ -224,16 +223,17 @@ def create_multiple_accounts(number_of_accounts):
         proxy = get_working_proxy()
         chrome_options.add_argument(f'--proxy-server={proxy}')
         
+        driver = None  # Inicializar a variável driver
         try:
             driver = webdriver.Chrome(options=chrome_options)
             fill_form(driver)
+        except Exception as e:
+            print("Failed to create your Gmail, Sorry")
+            print(e)
         finally:
             # Encerrar o driver e remover o diretório temporário
-            driver.quit()
+            if driver:
+                driver.quit()
             shutil.rmtree(user_data_dir, ignore_errors=True)
         
         time.sleep(random.randint(5, 15))
-
-if __name__ == "__main__":
-    number_of_accounts = 5
-    create_multiple_accounts(number_of_accounts)
