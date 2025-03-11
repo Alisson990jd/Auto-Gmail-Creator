@@ -29,8 +29,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Passo 4: Baixar Chromedriver
-      - name: Download Chromedriver
+      # Passo 4: Baixar e configurar o Chrome
+      - name: Download and Setup Chrome
+        run: |
+          # Link direto para o Chrome Linux
+          CHROME_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1430882%2Fchrome-linux.zip?generation=1741707892044514&alt=media"
+          echo "Downloading Chrome from: $CHROME_URL"
+
+          # Baixar e configurar o Chrome
+          wget "$CHROME_URL" -O chrome-linux.zip
+          unzip chrome-linux.zip
+          sudo mv chrome-linux /opt/chrome
+          sudo chmod +x /opt/chrome/chrome-linux/chrome
+
+      # Passo 5: Baixar e configurar o Chromedriver
+      - name: Download and Setup Chromedriver
         run: |
           # Link direto para o Chromedriver Linux
           CHROMEDRIVER_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1430882%2Fchromedriver_linux64.zip?generation=1741707897235559&alt=media"
@@ -42,7 +55,9 @@ jobs:
           sudo mv chromedriver_linux64/chromedriver /usr/local/bin/
           chmod +x /usr/local/bin/chromedriver
 
-      # Passo 5: Executar o script
+      # Passo 6: Executar o script
       - name: Run Gmail Creator Script
         run: |
+          # Garantir que o Chrome esteja no PATH
+          export PATH="/opt/chrome/chrome-linux:$PATH"
           python auto_gmail_creator.py
