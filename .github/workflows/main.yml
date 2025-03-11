@@ -1,0 +1,46 @@
+name: Auto Gmail Creator Workflow
+
+on:
+  # Dispara o workflow quando há push ou pull request no repositório
+  push:
+    paths:
+      - '**' # Observa todas as alterações no repositório
+  pull_request:
+    paths:
+      - '**' # Observa todas as alterações no repositório
+
+jobs:
+  create-gmail-accounts:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Fazer checkout do repositório
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Passo 2: Configurar Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # Versão compatível com o script
+
+      # Passo 3: Instalar as dependências
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Passo 4: Baixar Chromedriver
+      - name: Download Chromedriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}")
+          wget "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          chmod +x /usr/local/bin/chromedriver
+
+      # Passo 5: Executar o script
+      - name: Run Gmail Creator Script
+        run: |
+          python auto_gmail_creator.py
