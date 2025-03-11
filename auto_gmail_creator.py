@@ -210,7 +210,9 @@ def fill_form(driver):
         print(e)
 
 def create_multiple_accounts(number_of_accounts):
+    print("Starting account creation process...")
     for i in range(number_of_accounts):
+        print(f"Creating account {i + 1} of {number_of_accounts}")
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-infobars")
         
@@ -225,7 +227,9 @@ def create_multiple_accounts(number_of_accounts):
         
         driver = None  # Inicializar a variável driver
         try:
+            print("Initializing WebDriver...")
             driver = webdriver.Chrome(options=chrome_options)
+            print("WebDriver initialized successfully.")
             fill_form(driver)
         except Exception as e:
             print("Failed to create your Gmail, Sorry")
@@ -233,7 +237,9 @@ def create_multiple_accounts(number_of_accounts):
         finally:
             # Encerrar o driver e remover o diretório temporário
             if driver:
+                print("Quitting WebDriver...")
                 driver.quit()
+            print("Removing temporary user data directory...")
             shutil.rmtree(user_data_dir, ignore_errors=True)
         
         time.sleep(random.randint(5, 15))
