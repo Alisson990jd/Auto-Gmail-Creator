@@ -32,16 +32,12 @@ jobs:
       # Passo 4: Baixar Chromedriver
       - name: Download Chromedriver
         run: |
-          # Detectar a versão principal do Chrome
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d '.' -f 1-3)
-          echo "Detected Chrome version: $CHROME_VERSION"
-
-          # Obter a versão mais recente do Chromedriver para a versão principal do Chrome
-          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          echo "Downloading Chromedriver version: $CHROMEDRIVER_VERSION"
+          # Link direto para o Chromedriver Linux
+          CHROMEDRIVER_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1430882%2Fchromedriver_linux64.zip?generation=1741707897235559&alt=media"
+          echo "Downloading Chromedriver from: $CHROMEDRIVER_URL"
 
           # Baixar e configurar o Chromedriver
-          wget "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+          wget "$CHROMEDRIVER_URL" -O chromedriver_linux64.zip
           unzip chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/
           chmod +x /usr/local/bin/chromedriver
